@@ -1,0 +1,119 @@
+services:
+  - docker:dind
+
+stages:
+  - build
+  - test
+  - package
+
+# Build jobs
+draco_build:
+  stage: build
+  when: manual
+  image: docker:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/draco:test subsystems/draco
+
+hadoop_build:
+  stage: build
+  when: manual
+  image: docker:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/hadoop-namenode:test subsystems/hadoop-namenode
+
+livy_build:
+  stage: build
+  when: manual
+  image: docker:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/livy:test subsystems/livy
+
+spark_build:
+  stage: build
+  when: manual
+  image: docker:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/spark-node:test subsystems/spark-node
+
+# Test jobs
+draco_test:
+  stage: test
+  when: manual
+  image: docker:dind
+  script:
+    - echo "Starting Draco application"
+    - cd $CI_PROJECT_DIR/orchestration
+    - docker-compose up -d draco
+    - docker exec draco bash -c 'bash /opt/nifi/nifi-current/test/_run_draco_tests.sh'
+
+hadoop_test:
+  stage: test
+  when: manual
+  image: docker:latest
+  script:
+    - echo "Starting Hadoop application"
+    - cd $CI_PROJECT_DIR/orchestration
+    - docker-compose up -d hadoop-namenode hadoop-datanode
+    - docker exec hadoop-namenode bash -c 'bash /test/_run_hadoop_tests.sh'
+
+livy_test:
+  stage: test
+  when: manual
+  image: docker:latest
+  script:
+    - echo "Starting Livy application"
+    - cd $CI_PROJECT_DIR/orchestration
+    - docker-compose up -d livy
+    - docker exec livy bash -c 'bash /test/_run_livy_tests.sh'
+
+spark_test:
+  stage: test
+  when: manual
+  image: docker:latest
+  script:
+    - echo "Starting Spark application"
+    - cd $CI_PROJECT_DIR/orchestration
+    - docker-compose up -d spark-master spark-worker-1
+    - docker exec spark-master bash -c 'bash /tmp/test/_run_spark_tests.sh'
+
+
+# Release jobs
+draco_release:
+  stage: package
+  when: manual
+  image: docker:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/draco:latest subsystems/draco
+    - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/draco:latest
+
+hadoop_release:
+  stage: package
+  when: manual
+  image: docker:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/hadoop-namenode:latest subsystems/hadoop-namenode
+    - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/hadoop-namenode:latest
+
+livy_release:
+  stage: package
+  when: manual
+  image: docker:latest
+  script:
+   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+   - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/livy:latest subsystems/livy
+   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/livy:latest
+
+spark_release:
+  stage: package
+  when: manual
+  image: docker:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/spark-node:latest subsystems/spark-node
+    - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/spark-node:latest

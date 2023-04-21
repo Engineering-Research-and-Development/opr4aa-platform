@@ -1,0 +1,170 @@
+version: "3"
+services:
+
+   spark-master:
+      hostname: master
+      build: ../subsystems/spark-node
+      image: spark-node
+      command: bin/spark-class org.apache.spark.deploy.master.Master -h master
+      container_name: spark-master
+      networks:
+         - hostnet
+      environment:
+         MASTER: spark://master:7077
+         SPARK_CONF_DIR: /conf
+         SPARK_PUBLIC_DNS: localhost
+         SPARK_DIVER_CORES: 1
+         SPARK_DRIVER_MEMORY: 1g
+      expose:
+         - 7001
+         - 7002
+         - 7003
+         - 7004
+         - 7005
+         - 7077
+         - 6066
+   #      - 4040
+      ports:
+   #      - 4040:4040
+         - 6066:6066
+         - 7077:7077
+         - 8080:8080
+      volumes:
+         - ./conf/master:/conf
+         - ./data:/tmp/data
+         - ./algorithms:/tmp/algorithms
+         - ./test:/tmp/test
+   
+   spark-worker-1:
+      hostname: spark-worker-1
+      build: ../subsystems/spark-node
+      image: spark-node
+      command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://master:7077
+      container_name: spark-worker-1
+      networks:
+         - hostnet
+      environment:
+         SPARK_CONF_DIR: /conf
+         SPARK_WORKER_CORES: 1
+         SPARK_WORKER_MEMORY: 2g
+         SPARK_WORKER_PORT: 8881
+         SPARK_WORKER_WEBUI_PORT: 8081
+         SPARK_PUBLIC_DNS: localhost
+      expose:
+         - 7012
+         - 7013
+         - 7014
+         - 7015
+         - 8881
+      ports:
+         - 8081:8081
+      volumes:
+         - ./conf/worker:/conf
+         - ./data:/tmp/data
+         - ./test:/tmp/test
+   
+   livy:
+      hostname: livy
+      build: ../subsystems/livy
+      image: livy
+      container_name: livy
+      networks:
+         - hostnet
+      environment:
+         - SPARK_CONF_DIR=/conf
+         - SPARK_DIVER_CORES=1
+         - SPARK_DRIVER_MEMORY=1g
+         - SPARK_MASTER_ENDPOINT=master
+         - SPARK_MASTER_PORT=7077
+      ports:
+         - 8998:8998
+         - 4040:4040
+      volumes:
+         - ./conf/livy/livy.conf.extra:/usr/local/bin/livy.conf.extra
+         - ./algorithms:/algorithms
+         - ./test:/test
+
+      depends_on:
+         - "spark-master"
+         - "spark-worker-1"
+
+   hadoop-namenode:
+      hostname: hadoop-namenode
+      build: ../subsystems/hadoop-namenode
+      image: hadoop-namenode
+      container_name: hadoop-namenode
+      networks:
+         - hostnet
+      ports:
+         - "9000:9000"
+         # HDFS web UI (http)
+         - "9870:9870"
+      volumes:
+         - hadoop_namenode_volume:/hadoop/dfs/name
+         - ./conf/hadoop/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+         - ./conf/hadoop/core-site.xml:/etc/hadoop/core-site.xml
+         - ./algorithms:/algorithms
+         - ./data:/data
+         - ./test:/test
+      environment:
+         - CLUSTER_NAME=hadoop-cluster
+      env_file:
+         - conf/hadoop/hadoop.env
+   
+   hadoop-datanode:
+      hostname: hadoop-datanode
+      image: bde2020/hadoop-datanode:2.0.0-hadoop3.1.3-java8
+      container_name: hadoop-datanode
+      networks:
+         - hostnet
+      ports:
+         - "9864:9864"
+      volumes:
+         - hadoop_datanode_volume:/hadoop/dfs/data
+         - ./conf/hadoop/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+         - ./conf/hadoop/core-site.xml:/etc/hadoop/core-site.xml
+      environment:
+         SERVICE_PRECONDITION: "hadoop-namenode:9870"
+      env_file:
+         - conf/hadoop/hadoop.env
+
+   # draco:
+   #    hostname: draco
+   #    build: ../subsystems/draco
+   #    image: draco
+   #    container_name: draco
+   #    networks:
+   #       - hostnet
+   #    depends_on:
+   #       - hadoop-namenode
+   #       - hadoop-datanode
+   #    ports:
+   #       # NIFI web UI (https)
+   #       - 8443:8443
+   #       # Algorithm ingestion (http)
+   #       - 8085:8085
+   #       # Data ingestion (http)
+   #       - 8086:8086
+   #    env_file:
+   #       - conf/draco/nifi.env
+   #    tty: true
+   #    volumes:
+   #       - ./conf/hadoop/hdfs-site.xml:/opt/nifi/nifi-current/conf/hdfs-site.xml
+   #       - ./conf/hadoop/core-site.xml:/opt/nifi/nifi-current/conf/core-site.xml
+   #       - ./algorithms:/opt/nifi/nifi-current/algorithms
+   #       - ./templates/:/opt/nifi/nifi-current/templates
+   #       - ./data/input:/opt/nifi/nifi-current/input
+   #       - ./data/output:/opt/nifi/nifi-current/output
+   #       - ./test:/opt/nifi/nifi-current/test
+   #       - ./test/functional:/opt/nifi/nifi-current/test/functional
+   #       - ./data/requests:/opt/nifi/nifi-current/requests
+
+volumes:
+   hadoop_namenode_volume:
+   hadoop_datanode_volume:
+   # draco_volume:
+
+networks:
+   hostnet:
+      external:
+         name: network-bridge

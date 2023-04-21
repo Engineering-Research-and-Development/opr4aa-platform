@@ -1,0 +1,56 @@
+{
+	"info": {
+		"_postman_id": "6d7f375d-5d38-4fe2-af10-a0f2ba120038",
+		"name": "OPR4AA-V2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "DAG-Runs",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "airflow",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "airflow",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"conf\": {\r\n        \"host\": \"api.host.cloud\",\r\n        \"username\": \"*****\",\r\n        \"password\": \"\"*****\",\",\r\n        \"source_entity\": {\r\n            \"entity_id\": \"OPR4AA-Execution-Test\",\r\n            \"entity_type\": \"Entity-Type-Test\",\r\n            \"attribute\":\"image\"\r\n        },\r\n        \"sink_entity\": {\r\n            \"entity_id\": \"OPR4AA-Execution-Test\",\r\n            \"entity_type\": \"Entity-Type-Test\",\r\n            \"attribute\":\"evaluation\"\r\n        }\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8087/api/v1/dags/test-pipeline/dagRuns",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8087",
+					"path": [
+						"api",
+						"v1",
+						"dags",
+						"test-pipeline",
+						"dagRuns"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

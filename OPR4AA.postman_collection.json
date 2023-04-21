@@ -1,0 +1,59 @@
+{
+	"info": {
+		"_postman_id": "6711cb7a-6765-497f-be88-5c454e6e3646",
+		"name": "OPR4AA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "ingest-algorithm",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": ""
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8085/ingest-algorithm",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"ingest-algorithm"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ingest-data",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": ""
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8086/ingest-data",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8086",
+					"path": [
+						"ingest-data"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
