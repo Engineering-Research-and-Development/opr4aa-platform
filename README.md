@@ -1,5 +1,5 @@
 <h1>On-The-Edge Processing Component for Acquisition and Actuation (OPR4AA)</h1>
-<img align="right" src="documentation/logo.png" width="250" alt="opr4aa logo">
+<img align="right" src="documentation/logo.png" width="150" alt="opr4aa logo">
 
 OPR4AA stands for On-the-edge PRocessing for Acquisition and Actuation: it is a platform based on open source FIWARE/Apache components aiming to cover the entire industrial data value chain. Built on top of the <a href="https://github.com/Engineering-Research-and-Development/dida">DIDA</a> (Digital Industries Data Analytics) platform, it can be deployed for edge processing, collecting data, process them and communicate results with other external cloud modules
 
